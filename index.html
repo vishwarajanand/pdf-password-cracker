@@ -1,0 +1,79 @@
+<html>
+
+<head>
+  <title>PDF Password Cracker</title>
+  <script src="//mozilla.github.io/pdf.js/build/pdf.js"></script>
+
+</head>
+
+<body>
+  <h2>
+    PDF Password Cracker
+  </h2>
+  <div>
+    Select a PDF file and a range of numbers to loop for password.
+    Also add Prefix and Suffix to append to the numbers as is
+  </div>
+  <br />
+  <input id="source_pdf_file_path"
+         type="file"
+         name="Upload"
+         accept="application/pdf">
+  <br />
+  <br />
+  <input id="txt_prefix"
+         type="text"
+         name="prefix"
+         placeholder="prefix">
+  <br />
+  <br />
+  <input id="txt_start_num"
+         type="number"
+         min="0"
+         name="start_num"
+         placeholder="Starting number">
+  <br />
+  <br />
+  <input id="txt_end_num"
+         type="number"
+         min="0"
+         name="end_num"
+         placeholder="Last number">
+  <br />
+  <br />
+  <input id="txt_suffix"
+         type="text"
+         name="suffix"
+         placeholder="suffix">
+  <br />
+  <br />
+  <button id='btn_crack_pdf'
+          onclick="execute">Crack PDF</button>
+  <br />
+  <br />
+  <label id="lbl_show_passwd"
+         for="password">Password will show here once done.. ETA 5 mins...</label><br>
+
+  <br />
+  <br />
+  <canvas id="canvas"></canvas>
+  <div id="notes">
+    <br>
+    <b>Notes: </b>
+    <br>
+    1. Website Hosted on GitHub here:
+    <a href="https://github.com/vishwarajanand/pdf-password-cracker">
+      https://github.com/vishwarajanand/pdf-password-cracker
+    </a>
+    <br>
+    2. Blog here:
+    <a href="https://vishwarajanand.com/tech/released-pdfs-cracker">
+      https://vishwarajanand.com/tech/released-pdfs-cracker
+    </a>
+    <br />
+    <script src="magic.js"></script>
+
+  </div>
+</body>
+
+</html>
