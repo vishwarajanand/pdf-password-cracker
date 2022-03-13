@@ -30,7 +30,7 @@ async function load_pdf_from_url(source, passwd) {
     // The workerSrc property shall be specified.
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdfjs-dist/pdf.worker.js';
 
-    const pdf = await pdfjsLib.getDocument({ data: source, passwd }).promise;
+    const pdf = await pdfjsLib.getDocument({ data: source, password: passwd }).promise;
     const page = await pdf.getPage(1); // page number 1
     // const tokenizedText = await page.getTextContent();
     var scale = 1.5;
