@@ -1,15 +1,16 @@
 <html>
 
-<head>
-  <title>PDF Password Cracker</title>
-  <script src="//mozilla.github.io/pdf.js/build/pdf.js"></script>
+  <head>
+    <title>PDF Password Cracker</title>
+    <script src="//mozilla.github.io/pdf.js/build/pdf.js"></script>
 
-</head>
+  </head>
 
 <body>
   <h2>
     PDF Password Cracker
   </h2>
+  <br />
   <div>
     Select a PDF file and a range of numbers to loop for password.
     Also add Prefix and Suffix to append to the numbers as is
@@ -18,7 +19,8 @@
   <input id="source_pdf_file_path"
          type="file"
          name="Upload"
-         accept="application/pdf">
+         onchange="previewFile()"
+         accept=".pdf">
   <br />
   <br />
   <input id="txt_prefix"
@@ -47,15 +49,34 @@
          placeholder="suffix">
   <br />
   <br />
-  <button id='btn_crack_pdf'
-          onclick="execute">Crack PDF</button>
+  <button id='btn_crack_pdf'>Crack PDF</button>
   <br />
   <br />
   <label id="lbl_show_passwd"
-         for="password">Password will show here once done.. ETA 5 mins...</label><br>
+         for="password">Select a file and click Crack PDF</label><br>
 
   <br />
   <br />
+  <iframe src=""
+          id="iframe-pdf"
+          hidden=""
+          width="80%"
+          height="80%"></iframe>
+  <script>
+    function previewFile() {
+      const preview = document.querySelector('iframe');
+      const file = document.querySelector('input[type=file]').files[0];
+      const reader = new FileReader();
+      var filename = file.name;
+      reader.addEventListener("load", function () {
+        // convert file to base64 string
+        preview.src = reader.result;
+      }, false);
+      if (file) {
+        reader.readAsDataURL(file);
+      }
+    }
+  </script>
   <canvas id="canvas"></canvas>
   <div id="notes">
     <br>
@@ -72,7 +93,6 @@
     </a>
     <br />
     <script src="magic.js"></script>
-
   </div>
 </body>
 
