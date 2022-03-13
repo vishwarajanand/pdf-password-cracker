@@ -1,23 +1,12 @@
 
-// If absolute URL from the remote server is provided, configure the CORS
-// header on that server.
-var pdfjsLib = window['pdfjs-dist/build/pdf'];
-
-// Prepare canvas using PDF page dimensions
-var canvas = document.getElementById('canvas');
-var context = canvas.getContext('2d');
-
-// The workerSrc property shall be specified.
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdfjs-dist/pdf.worker.js';
-
 var url = '';
 var source = '';
-function getStatusLabelText(requestedStatus, pwd1, pwd2) {
+function getStatusLabelText(requestedStatus, aditionalText) {
   const statusTextStore = {
     START: 'Select a PDF file and click CRACK PDF',
     PROCESSING: 'Password will show below once done.. ETA 5 mins...',
-    SUCCESS: `Password of the file is: ${pwd1}`,
-    FAILED: `No Password found from ${pwd1} to ${pwd2}.`
+    SUCCESS: `Password of the file is: ${aditionalText}`,
+    FAILED: `Password invalid when checked with ${aditionalText}.`
   };
   if (requestedStatus in statusTextStore) {
     document.getElementById('lbl_show_passwd').innerHTML = statusTextStore[requestedStatus];
@@ -34,9 +23,16 @@ async function load_pdf_from_url(source, passwd) {
   }
 
   try {
-    const pdf = await pdfjslib.getDocument({ data: source, passwd }).promise;
+    // If absolute URL from the remote server is provided, configure the CORS
+    // header on that server.
+    const pdfjsLib = window['pdfjs-dist/build/pdf'];
+
+    // The workerSrc property shall be specified.
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdfjs-dist/pdf.worker.js';
+
+    const pdf = await pdfjsLib.getDocument({ data: source, passwd }).promise;
     const page = await pdf.getPage(1); // page number 1
-    const tokenizedText = await page.getTextContent();
+    // const tokenizedText = await page.getTextContent();
     var scale = 1.5;
     var viewport = page.getViewport({ scale: scale });
     // Render PDF page into canvas context
@@ -74,9 +70,9 @@ async function execute() {
 
     for (let i = pwd_start_num; i <= pwd_end_num; i++) {
       var cur_pwd = `${prefix}${i}${suffix}`;
-      const attempt = await load_pdf_from_url(this.source, cur_pwd);
+      const attempt = await load_pdf_from_url(window.source, cur_pwd);
       if (!attempt) {
-        getStatusLabelText('FAILED', `${prefix}${pwd_start_num}${suffix}`, `${prefix}${pwd_end_num}${suffix}`);
+        getStatusLabelText('FAILED', cur_pwd);
       } else {
         getStatusLabelText('SUCCESS', cur_pwd);
         break;
@@ -99,8 +95,8 @@ document.getElementById('source_pdf_file_path').addEventListener('change', funct
   var reader = new FileReader();
   reader.onload = function () {
     var arrayBuffer = this.result;
+    window.source = arrayBuffer;
     console.log('read file successfully');
-    this.source = arrayBuffer;
   }
   reader.readAsArrayBuffer(this.files[0]);
   // reader.readAsArrayBuffer(new File(pdf_url));
