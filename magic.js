@@ -1,6 +1,10 @@
 
 var url = '';
 var source = '';
+// Prepare canvas using PDF page dimensions
+var canvas = document.getElementById('canvas');
+var context = canvas.getContext('2d');
+
 function getStatusLabelText(requestedStatus, aditionalText) {
   const statusTextStore = {
     START: 'Select a PDF file and click CRACK PDF',
