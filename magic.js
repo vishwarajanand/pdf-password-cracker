@@ -1,7 +1,7 @@
 
 // If absolute URL from the remote server is provided, configure the CORS
 // header on that server.
-var pdfjsLib = window['pdfjs-dist/pdf.js'];
+var pdfjsLib = window['pdfjs-dist/build/pdf'];
 
 // Prepare canvas using PDF page dimensions
 var canvas = document.getElementById('canvas');
@@ -75,7 +75,6 @@ async function execute() {
     for (let i = pwd_start_num; i <= pwd_end_num; i++) {
       var cur_pwd = `${prefix}${i}${suffix}`;
       const attempt = await load_pdf_from_url(this.source, cur_pwd);
-      // const attempt = await load_pdf_from_url(this.source, 'AXNPA1087D');
       if (!attempt) {
         getStatusLabelText('FAILED', `${prefix}${pwd_start_num}${suffix}`, `${prefix}${pwd_end_num}${suffix}`);
       } else {
