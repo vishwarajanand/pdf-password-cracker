@@ -20,7 +20,7 @@ Hosted on Github Pages:
 
 # Blog
 
-Blog is published at: https://vishwarajanand.com/tech/released-pdfs-cracker
+Blog is published at: https://vishwarajanand.com/tech/released-pdf-password-cracker
 
 # Notes
 1. Build using PDFjs lib from Mozilla, [link here](https://github.com/mozilla/pdf.js/releases/tag/v2.13.216).
