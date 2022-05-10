@@ -50,7 +50,9 @@ async function load_pdf_from_url(source, passwd) {
       return true;
     }
   } catch (e) {
-    console.error(e);
+    // printing huge logs leads to a page crash
+    // only enable for debugging
+    // console.error(e);
     getStatusLabelText('PROCESSING');
     return false;
   }
