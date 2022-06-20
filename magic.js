@@ -50,7 +50,8 @@ async function load_pdf_from_url(source, passwd) {
       return true;
     }
   } catch (e) {
-    console.error(e);
+    // TODO: FIX loops larger than 500 which crash chrome tab
+    // console.error(e);
     getStatusLabelText('PROCESSING');
     return false;
   }
