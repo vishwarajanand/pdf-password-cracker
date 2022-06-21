@@ -4,15 +4,17 @@ var source = '';
 // Prepare canvas using PDF page dimensions
 var canvas = document.getElementById('canvas');
 var context = canvas.getContext('2d');
+var cur_state = 'START';
 
 function getStatusLabelText(requestedStatus, aditionalText) {
   const statusTextStore = {
-    START: 'Select a PDF file and click CRACK PDF',
-    PROCESSING: 'Password will show below once done.. ETA 5 mins...',
-    SUCCESS: `Password of the file is: ${aditionalText}`,
-    FAILED: `Password invalid when checked with ${aditionalText}.`
+    START: 'START: Select a PDF file and click CRACK PDF',
+    PROCESSING: 'PROCESSING: Password will show below once done.. ETA 5 mins...',
+    SUCCESS: `SUCCESS: Password of the file is: ${aditionalText}`,
+    FAILED: `FAILED: Password invalid when checked with ${aditionalText}.`
   };
   if (requestedStatus in statusTextStore) {
+    cur_state = requestedStatus;
     document.getElementById('lbl_show_passwd').innerHTML = statusTextStore[requestedStatus];
   } else {
     document.getElementById('lbl_show_passwd').innerHTML = statusTextStore['START'];
@@ -34,28 +36,36 @@ async function load_pdf_from_url(source, passwd) {
   }
 
   try {
-
-    const pdf = await pdfjsLib.getDocument({ data: source, password: passwd }).promise;
-    const page = await pdf.getPage(1); // page number 1
-    // const tokenizedText = await page.getTextContent();
-    var scale = 1.5;
-    var viewport = page.getViewport({ scale: scale });
-    // Render PDF page into canvas context
-    var renderContext = {
-      canvasContext: context,
-      viewport: viewport
-    };
-    await page.render(renderContext).promise;
-    if (passwd) {
-      document.getElementById('iframe-pdf').hidden = false;
-      return true;
-    }
+    loadingTask = await pdfjsLib.getDocument({ data: source, password: passwd });
+    loadingTask.promise
+      .then(async function (pdf) {
+        getStatusLabelText('SUCCESS', passwd);
+        const page = await pdf.getPage(1); // page number 1
+        // const tokenizedText = await page.getTextContent();
+        var scale = 1.5;
+        var viewport = page.getViewport({ scale: scale });
+        // Render PDF page into canvas context
+        var renderContext = {
+          canvasContext: context,
+          viewport: viewport
+        };
+        await page.render(renderContext).promise;
+        if (passwd) {
+          document.getElementById('iframe-pdf').hidden = false;
+        }
+      })
+      .catch(function (e) {
+        // TODO: FIX loops larger than 500 which crash chrome tab
+        // console.error(e);
+        getStatusLabelText('FAILED', passwd);
+      });
   } catch (e) {
     // TODO: FIX loops larger than 500 which crash chrome tab
     // console.error(e);
     getStatusLabelText('PROCESSING');
-    return false;
   }
+  await loadingTask;
+  loadingTask.destroy();
 }
 
 async function execute_series(prefix, suffix, pwd_start_num, series_length, source) {
@@ -63,13 +73,10 @@ async function execute_series(prefix, suffix, pwd_start_num, series_length, sour
   var series_limit = Math.min(100, series_length);
   for (let i = 0; i <= series_limit; i++) {
     var cur_pwd = `${prefix}${i + pwd_start_num}${suffix}`;
-    const attempt = await load_pdf_from_url(source, cur_pwd);
-    if (!attempt) {
-      getStatusLabelText('FAILED', cur_pwd);
-    } else {
-      getStatusLabelText('SUCCESS', cur_pwd);
-      break;
+    if (cur_state.startsWith('SUCCESS')) {
+      return;
     }
+    await load_pdf_from_url(source, cur_pwd);
   }
 
   if (series_length <= series_limit) {
@@ -81,7 +88,7 @@ async function execute_series(prefix, suffix, pwd_start_num, series_length, sour
   setTimeout(
     async () => {
       await execute_series(prefix, suffix, pwd_start_num + series_limit, series_length - series_limit, source);
-    }, 2000);
+    }, 5000);
 }
 
 async function execute() {
