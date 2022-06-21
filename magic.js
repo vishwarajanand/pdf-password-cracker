@@ -19,6 +19,13 @@ function getStatusLabelText(requestedStatus, aditionalText) {
   }
 }
 
+// If absolute URL from the remote server is provided, configure the CORS
+// header on that server.
+const pdfjsLib = window['pdfjs-dist/build/pdf'];
+
+// The workerSrc property creates new pdf.worker.js on every doc fetch
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdfjs-dist/pdf.worker.js';
+
 async function load_pdf_from_url(source, passwd) {
   // sanitize params
   if (!passwd || typeof passwd.valueOf() != "string" || passwd.length <= 0) {
@@ -27,12 +34,6 @@ async function load_pdf_from_url(source, passwd) {
   }
 
   try {
-    // If absolute URL from the remote server is provided, configure the CORS
-    // header on that server.
-    const pdfjsLib = window['pdfjs-dist/build/pdf'];
-
-    // The workerSrc property shall be specified.
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdfjs-dist/pdf.worker.js';
 
     const pdf = await pdfjsLib.getDocument({ data: source, password: passwd }).promise;
     const page = await pdf.getPage(1); // page number 1
@@ -57,6 +58,19 @@ async function load_pdf_from_url(source, passwd) {
   }
 }
 
+async function execute_series(prefix, suffix, pwd_start_num, series_length, source) {
+  for (let i = 0; i <= series_length; i++) {
+    var cur_pwd = `${prefix}${i + pwd_start_num}${suffix}`;
+    const attempt = await load_pdf_from_url(source, cur_pwd);
+    if (!attempt) {
+      getStatusLabelText('FAILED', cur_pwd);
+    } else {
+      getStatusLabelText('SUCCESS', cur_pwd);
+      break;
+    }
+  }
+}
+
 async function execute() {
   let pdf_url = document.getElementById('source_pdf_file_path').value;
   if (pdf_url) {
@@ -72,17 +86,7 @@ async function execute() {
       pwd_start_num = temp;
       // pwd_start_num, pwd_end_num = pwd_end_num, pwd_start_num; // works only in python lol
     }
-
-    for (let i = pwd_start_num; i <= pwd_end_num; i++) {
-      var cur_pwd = `${prefix}${i}${suffix}`;
-      const attempt = await load_pdf_from_url(window.source, cur_pwd);
-      if (!attempt) {
-        getStatusLabelText('FAILED', cur_pwd);
-      } else {
-        getStatusLabelText('SUCCESS', cur_pwd);
-        break;
-      }
-    }
+    await execute_series(prefix, suffix, pwd_start_num, pwd_end_num - pwd_start_num, window.source);
   }
   else {
     getStatusLabelText('START');
