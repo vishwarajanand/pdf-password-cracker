@@ -77,7 +77,11 @@ async function execute_series(prefix, suffix, pwd_start_num, series_length, sour
     return;
   }
 
-  await execute_series(prefix, suffix, pwd_start_num + series_limit, series_length - series_limit, source);
+  // kick off a delayed execution if series not exhausted!
+  setTimeout(
+    async () => {
+      await execute_series(prefix, suffix, pwd_start_num + series_limit, series_length - series_limit, source);
+    }, 2000);
 }
 
 async function execute() {
