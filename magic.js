@@ -59,7 +59,9 @@ async function load_pdf_from_url(source, passwd) {
 }
 
 async function execute_series(prefix, suffix, pwd_start_num, series_length, source) {
-  for (let i = 0; i <= series_length; i++) {
+  // limit long loops on main thread to prevent page crash
+  var series_limit = Math.min(100, series_length);
+  for (let i = 0; i <= series_limit; i++) {
     var cur_pwd = `${prefix}${i + pwd_start_num}${suffix}`;
     const attempt = await load_pdf_from_url(source, cur_pwd);
     if (!attempt) {
@@ -69,6 +71,13 @@ async function execute_series(prefix, suffix, pwd_start_num, series_length, sour
       break;
     }
   }
+
+  if (series_length <= series_limit) {
+    // we have exhausted the total range
+    return;
+  }
+
+  await execute_series(prefix, suffix, pwd_start_num + series_limit, series_length - series_limit, source);
 }
 
 async function execute() {
