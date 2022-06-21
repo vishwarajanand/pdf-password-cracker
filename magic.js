@@ -14,6 +14,9 @@ function getStatusLabelText(requestedStatus, aditionalText) {
     FAILED: `FAILED: Password invalid when checked with ${aditionalText}.`
   };
   if (requestedStatus in statusTextStore) {
+    if (cur_state.startsWith('SUCCESS')) {
+      return;
+    }
     cur_state = requestedStatus;
     document.getElementById('lbl_show_passwd').innerHTML = statusTextStore[requestedStatus];
   } else {
@@ -35,37 +38,31 @@ async function load_pdf_from_url(source, passwd) {
     passwd = '';
   }
 
-  try {
-    loadingTask = await pdfjsLib.getDocument({ data: source, password: passwd });
-    loadingTask.promise
-      .then(async function (pdf) {
-        getStatusLabelText('SUCCESS', passwd);
-        const page = await pdf.getPage(1); // page number 1
-        // const tokenizedText = await page.getTextContent();
-        var scale = 1.5;
-        var viewport = page.getViewport({ scale: scale });
-        // Render PDF page into canvas context
-        var renderContext = {
-          canvasContext: context,
-          viewport: viewport
-        };
-        await page.render(renderContext).promise;
-        if (passwd) {
-          document.getElementById('iframe-pdf').hidden = false;
-        }
-      })
-      .catch(function (e) {
-        // TODO: FIX loops larger than 500 which crash chrome tab
-        // console.error(e);
-        getStatusLabelText('FAILED', passwd);
-      });
-  } catch (e) {
-    // TODO: FIX loops larger than 500 which crash chrome tab
-    // console.error(e);
-    getStatusLabelText('PROCESSING');
-  }
+  loadingTask = await pdfjsLib.getDocument({ data: source, password: passwd });
+  loadingTask.promise
+    .then(async function (pdf) {
+      getStatusLabelText('SUCCESS', passwd);
+      const page = await pdf.getPage(1); // page number 1
+      // const tokenizedText = await page.getTextContent();
+      var scale = 1.5;
+      var viewport = page.getViewport({ scale: scale });
+      // Render PDF page into canvas context
+      var renderContext = {
+        canvasContext: context,
+        viewport: viewport
+      };
+      await page.render(renderContext).promise;
+      if (passwd) {
+        document.getElementById('iframe-pdf').hidden = false;
+      }
+    })
+    .catch(function (e) {
+      loadingTask.destroy();
+      // TODO: FIX loops larger than 500 which crash chrome tab
+      // console.error(e);
+      getStatusLabelText('FAILED', passwd);
+    });
   await loadingTask;
-  loadingTask.destroy();
 }
 
 async function execute_series(prefix, suffix, pwd_start_num, series_length, source) {
